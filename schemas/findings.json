@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["findings", "summary"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "category", "file", "line_start", "line_end", "title", "explanation", "suggested_fix", "confidence"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^F[0-9]{3}$" },
+          "severity": { "enum": ["CRITICAL", "IMPORTANT", "LOW"] },
+          "category": { "enum": ["bug", "security", "performance", "logic", "type-safety", "error-handling", "race-condition"] },
+          "file": { "type": "string" },
+          "line_start": { "type": "integer", "minimum": 1 },
+          "line_end": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string", "maxLength": 120 },
+          "explanation": { "type": "string" },
+          "suggested_fix": { "type": "string", "minLength": 1 },
+          "confidence": { "enum": ["HIGH", "MEDIUM", "LOW"] }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total", "critical", "important", "low"],
+      "properties": {
+        "total": { "type": "integer" },
+        "critical": { "type": "integer" },
+        "important": { "type": "integer" },
+        "low": { "type": "integer" }
+      }
+    }
+  }
+}
