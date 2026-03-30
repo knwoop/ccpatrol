@@ -1,0 +1,45 @@
+language: go
+description: Go code review rules — Effective Go, Uber Go Style Guide, and community best practices
+references:
+  - "Effective Go (https://go.dev/doc/effective_go)"
+  - "Uber Go Style Guide (https://github.com/uber-go/guide/blob/master/style.md)"
+  - "Go Code Review Comments (https://go.dev/wiki/CodeReviewComments)"
+rules:
+  error-handling:
+    - "Wrap errors with fmt.Errorf(\"context: %w\", err). Bare return err loses context"
+    - "Define sentinel errors with var ErrFoo = errors.New(\"foo\") and compare with errors.Is/errors.As"
+    - "Reserve panic for truly unrecoverable situations. Never panic in library code"
+    - "Check errors from deferred Close(), especially for write-oriented types (os.File, gzip.Writer)"
+  concurrency:
+    - "Make goroutines cancellable via context.Context. Uncancellable goroutines leak"
+    - "Protect shared state with sync.Mutex or channels. Detectable with -race"
+    - "Call sync.WaitGroup.Add outside the goroutine. Adding inside races with Wait"
+    - "Only the sender should close a channel. Closing on the receiver side panics"
+  interfaces:
+    - "Define interfaces at the call site, not the implementation (accept interfaces, return structs)"
+    - "Prefer small interfaces (1-2 methods). Split large interfaces"
+    - "Avoid overuse of interface{}/any — it undermines type safety. Consider generics"
+  naming:
+    - "All exported functions and types must have GoDoc comments"
+    - "Don't stutter package name in type name (http.HTTPServer → http.Server)"
+    - "Don't prefix getters with Get (GetName → Name)"
+    - "Keep acronyms consistently capitalized (URL, HTTP, ID)"
+  resource-management:
+    - "context.Context must be the first parameter. Never store it in a struct"
+    - "Always defer rows.Close() for database/sql Rows"
+    - "Always close HTTP response Body after reading"
+    - "Prefer accepting io.Reader/io.Writer over concrete types"
+  testing:
+    - "Use table-driven tests. They make adding cases trivial"
+    - "Call t.Helper() in test helpers so error lines report correctly"
+    - "Use t.Parallel() for independent tests"
+    - "Mock external dependencies via interfaces to keep tests deterministic"
+  performance:
+    - "Use strings.Builder for string concatenation in loops"
+    - "Pre-allocate slices with make([]T, 0, cap) when capacity is known"
+    - "Initialize maps with make(map[K]V, cap) when size is estimable"
+  style:
+    - "Minimize use of init(). It makes testing and debugging harder"
+    - "Avoid mutating global variables. It breaks test isolation"
+    - "Use field names in struct literals (positional args break on field reorder)"
+    - "Don't distinguish nil slice from empty slice. Check with len"

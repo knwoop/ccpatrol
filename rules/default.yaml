@@ -1,0 +1,16 @@
+language: default
+description: Language-agnostic code review rules
+rules:
+  error-handling:
+    - "Never swallow errors silently. If discarding with _, add a comment explaining why"
+    - "Always validate external input (user input, API responses, file reads) before use"
+  security:
+    - "Flag hardcoded secrets (API keys, passwords, tokens) as CRITICAL"
+    - "Check that user input is never directly interpolated into SQL, shell commands, or file paths"
+    - "Verify type checks are performed during deserialization"
+  logic:
+    - "Watch for off-by-one errors. Verify behavior at boundaries (0, empty, nil, max)"
+    - "Check exhaustiveness of conditionals. A switch without default/else should be intentional"
+  resource-management:
+    - "Ensure opened resources (files, connections, locks) are always closed"
+    - "Flag external calls without timeouts"
