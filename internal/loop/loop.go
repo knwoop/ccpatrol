@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/knwoop/ccpatrol/internal/llm"
+	"github.com/knwoop/ccpatrol/internal/rules"
 	"github.com/knwoop/ccpatrol/internal/state"
 	"github.com/knwoop/ccpatrol/internal/steps"
 	"github.com/knwoop/ccpatrol/internal/types"
@@ -64,6 +65,15 @@ func Run(ctx context.Context, cfg types.Config, client llm.Client) (*LoopResult,
 		return &LoopResult{ExitCode: types.ExitConfigError, Summary: fmt.Sprintf("failed to load templates: %v", err)}, nil
 	}
 
+	// Load rules (default + language-specific + project overrides).
+	// We need diff files for language detection, so do an initial pass.
+	initialDiffFiles, _ := getDiffFiles(ctx, cfg)
+	rulesText, err := rules.Load(initialDiffFiles, ".")
+	if err != nil {
+		slog.Warn("failed to load rules, continuing without", "error", err)
+		rulesText = ""
+	}
+
 	for iteration := 1; iteration <= cfg.MaxLoops; iteration++ {
 		slog.Info("starting iteration", "iteration", iteration, "max", cfg.MaxLoops)
 
@@ -77,7 +87,7 @@ func Run(ctx context.Context, cfg types.Config, client llm.Client) (*LoopResult,
 		}
 
 		// === REVIEW ===
-		reviewPrompt, err := renderTemplate(tmpl, "review.md", map[string]string{"Diff": diff})
+		reviewPrompt, err := renderTemplate(tmpl, "review.md", map[string]any{"Diff": diff, "Rules": rulesText})
 		if err != nil {
 			return nil, fmt.Errorf("render review prompt: %w", err)
 		}
